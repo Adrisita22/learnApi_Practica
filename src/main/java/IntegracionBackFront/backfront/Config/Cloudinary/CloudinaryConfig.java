@@ -12,27 +12,27 @@ import java.util.Map;
 @Configuration
 public class CloudinaryConfig {
 
-    private String cloudName;
-    private String apiKey;
-    private String apiSecret;
 
-    @Bean //SIRVE PARA QUE EL METODO SEA INYECTADO EN OTRA CLASE QUE SE UTILIZARAON
-    public Cloudinary cloudinary(){
+   private String cloudName;
+   private String apiKet;
+   private String apiSecret;
 
-        //Se estan cargando todas las variables del archivo .env
-        Dotenv dotenv = Dotenv.load();
+ //Se auto ejecuta
+   @Bean
+   public Cloudinary cloudinary(){
+            //Crear un objeto de para leer las variables del archivo .env
+       Dotenv dontenv = Dotenv.load();
 
-        //Creamos un Map para almacenar la configuracion
-        Map<String,String> config = new HashMap<>();
+       //Crear un map par almacenar la configuracion necesaria para Cloudinary
 
-        //Obteniendo las credenciales desde la variables de entorno
-        config.put("cloud_name" , dotenv.get("CLOUDINARY_CLOUD_NAME"));
-        config.put("api_key", dotenv.get("CLOUDINARY_API_KEY"));
-        config.put("api_secret" , dotenv.get("CLOUDINARY_API_SECRET"));
+       Map<String, String> config = new HashMap<>();
 
-        //Retornar una nueva instancia de cloudinary con la configuracion cargada
-        return new Cloudinary(config);
-    }
+       config.put("cloud_name",dontenv.get("CLOUDINARY_CLOUD_NAME"));
+       config.put("api_key", dontenv.get("CLOUDINARY_API_KEY"));
+       config.put("api_secret",dontenv.get("CLOUDINARY_API_SECRET"));
+
+       return new Cloudinary(config);
+   }
+
 
 }
-

@@ -2,51 +2,52 @@ package IntegracionBackFront.backfront.Services.Cloudinary;
 
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Map;
 
 @Service
 public class CloudinaryService {
 
-    //1.Definir el tamaaño de las imagenes en MB
-    private static final long MAX_FILE_SIZE = 5 * 1024;
-    //2 Definimos las extensiones permitidos
-    private static final String[] ALLOWED_EXTENSIONS = {".jpg",".jpeg", ".png"};
-    //3.Atributo Cloudinary
+    //1.Constante para definir el tamaño maximo permitido para los archivos (5MB)
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+    //2.Extensiones de archivo permitidas para subir a cloudinary
+    private static final String[] ALLOWED_EXTENSION = {".jpg",".png",".jpeg"};
+
+    //3.Creamos un cliente de cloudinary inyectando como dependencia
     private final Cloudinary cloudinary;
 
-    //Constructor para inyeccion de dependencia Cloudinary
-
-    public CloudinaryService(Cloudinary cloudinary){
+    public CloudinaryService(Cloudinary cloudinary) {
         this.cloudinary = cloudinary;
     }
-         public String uploadImage(MultipartFile file) throws IOException{
-                 validateImage(file);
-         }
+
+    //Subir imagenes a la raiz de cloudinary
+    public  String uploadImage (MultipartFile file ) throws IOException{
+        validateImage(file);
+        Map<?,?> uploadResult = cloudinary.uploader()
+                .upload(file.getBytes(), ObjectUtils.asMap(
+                        "resource_type","auto",
+                        "quality","auto:good"
+                ));
+        return (String) uploadResult.get("secure_url");
+    }
 
     private void validateImage(MultipartFile file) {
-        //1.Verificar si el archivo esta vacio
-        if (file.isEmpty()){
-            throw new IllegalArgumentException("El archivo esta vacio.");
-        }
-        //2 Verificamos si el tamaño excede el limite permitido
-        if (file.getSize() > MAX_FILE_SIZE){
-            throw new IllegalArgumentException("El tamaño del archivo no debe ser mayor a 5MB");
-        }
-        //3.VERIFICAMOS EL NOMBRE ORIGINAL DEL ARCHIVO
-        String originalFileName = file.getOriginalFilename();
-        if (originalFileName == null){
-            throw new IllegalArgumentException("Nombre de archivo invalido");
-        }
-        //4EXTRAEMOS Y VALIDAMOS LA EXTENSION DEL ARCHIVO
-        String extension= originalFileName.substring(originalFileName.lastIndexOf(".")).toLowerCase();
-        if (!Arrays.asList(ALLOWED_EXTENSIONS).contains(extension)){
-            throw new IllegalArgumentException("Solo se permite archivos JPG,JPEG,PNG");
-        }
-
+        //1. Verificar si el archivo esta vacio
+        if (file.isEmpty()) throw  new IllegalArgumentException("El archivo no puede estar vacio");
+        if (file.getSize()> MAX_FILE_SIZE) throw new IllegalArgumentException("El tamaño no puede exceder de los 5MB"); //Verificar si el tamaño del archivo excede el limite permitido
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null) throw new IllegalArgumentException("Nombre de archivo no valido"); //Valida el nombre original del archivo
+        String extension =  originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
+        if (!Arrays.asList(ALLOWED_EXTENSION).contains(extension)) throw new IllegalArgumentException("Solo se permiten archivos jpg, jpeg o png");
+        if (!file.getContentType().startsWith("image/")) throw new IllegalArgumentException("El archivo debe ser una imagen valida");
     }
+
+    //Subirr imagenes a una carpeta de Cloudinary
+
 }
